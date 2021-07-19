@@ -1,0 +1,30 @@
+version: "3"
+services:
+  mongodb:
+    image: mongo
+    ports:
+      - 27107:27107
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=tiger
+    # we can define volume inside each conatiner like this
+    # volumes:
+    #   - db_data_host_vol:<container file path>
+    # now we can set volume from all volumes created downside
+    # volumes:
+    #   - mongo-data:/data/db
+    # the container default file path changes for different dbs
+    # for mysql: var/lib/mysql
+    # for postgres: var/lib/postgresql/data
+  mongo-express:
+    image: mongo-express
+    ports:
+      - 8081:8081
+    environment:
+      - ME_CONFIG_MONGODB_ADMINUSERNAME=admin
+      - ME_CONFIG_MONGODB_ADMINPASSWORD=tiger
+      - ME_CONFIG_MONGODB_SERVER=mongodb
+# we can create all volumes here under volumes for any container
+# volumes:
+#   mongo-data:
+#     driver: local

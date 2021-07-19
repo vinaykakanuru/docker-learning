@@ -1,0 +1,78 @@
+## image commands
+->docker pull <image_name from dockerhub> {will create an image}
+->docker images {will show all local images}
+->docker rmi <image_name> {will remove image from local}
+->docker rmi -f <image_name> {will forcefully remove image from local if the image is already using for any container}
+->docker rmi -f $(docker images -aq) {will remove all images form local}
+
+## container commands
+->docker ps {shows all running containers}
+->docker ps -a {shows all running and stopped containers}
+******>{Remember run command helps us to run a new container from an image}
+->docker run <imgae_name> {will create and start the container if image not found it pulls first}
+->docker run -d <image_name> {it runs in detach mode}
+->docker run -p <host_port>:<container:port> <image_name> {container runs in specified local host}
+->docker run --name <container_name> <image_name> {can keep desired names to our conatiner otherwise docker will create random names}
+->docker run -e <envt_var_name>=<envt_value> <image_name> {can set envt var to a container}
+->docker run --net <network_name> <image_name> {to make container runs in specified network}
+******>{Remember start/stop commands helps us to restart the existing conatiner with the help of container_id}
+->docker stop <conatiner_id> {will stops the container running} 
+->docker start <conatiner_id> {will starts the container running}
+->docker rm <conatiner_id> (or) <container_name> {will remove container}
+->docker container rm -f $(docker container ls -aq) {will remove all running and stopped conatiners}
+->docker exec -it <container_id> /bin/bash {can open conatiner in interactive terminal mode}
+Note: Some conatiners won't come with bash command line at that we can try with shell command (/bin/sh)
+->docker logs <container_id> {can open conatiner logs}
+->docker logs <container_id> | tail {can open last few lines from conatiner logs}
+
+
+## creating container for mongo and mongo-express in single network
+->docker networks ls (will show all networks available)
+->docker network create mongo-networks (will create a network)
+
+->docker run -d --net mongo-networks -p 27017:27017 -e MONGO_INITDB_ROOT_USERNAME=admin -e MONGO_INITDB_ROOT_PASSWORD=tiger --name mongodb-latest mongo
+->docker run -d --net mongo-networks -p 8081:8081-e ME_CONFIG_MONGODB_ADMINUSERNAME=admin -e ME_CONFIG_MONGODB_ADMINPASSWORD=tiger --name mongo-express -e ME_CONFIG_MONGODB_SERVER=mongodb-latest mongo-express
+
+### Docker-compose
+## for multiple running docker containers (Use Docker Compose file)
+******>{We don't need to create a network manually for conatiners which are going to create/run through docker-compose}
+******>{docker-compose will create network and names our container and adds prefix and suffixes to conatiner names}
+->docker-compose -f <file_name.yaml> up {-f means file, up means create and start containers}
+
+### Dockerfile
+--> It is a blueprint for creating docker images. First line of every Dockerfile is "FROM <image>"
+--> We can set environment variables just like we created in docker-compose file using "ENV <var_name=var_value>" inside of image environment.
+--> Using "RUN" command we can run any Linux commands while we spinning up Dockerfile to build an image. Every run command runs inside of the container not in host.
+--> Using "COPY" command we can copy files from source_host to container. "COPY <source_dir from host> <destination_dir in container>"
+--> We can also run copy command using "RUN" but as we know every command runs with "RUN" will only affect in container but not in host.
+--> "CMD" helps container to run that command as an "entry point" while spinning up the conatiner. "CMD ["python","manage.py","runserver"]"
+--> We can have mutiple "RUN" commands but only one entry point command using "CMD".
+
+# to build an image from Dockerfile we must need to provide two arguments tag and location of Dockerfile {-t <image_name> and <location where Dockerfile exists>}
+->docker build -t <image_name which we want to set> <location of Dockerfile in host>
+Note: When we make any changes to Dockerfile we need to re-build the image
+->docker exec -it <container_id> /bin/sh {opens up the shell terminal}
+--> We can see the environment variables set in our Dockerfile using "env" inside shell.
+
+
+### Docker Volumes
+--> When we start and stop the containers data inside conatiner will be lost. To save the content inside container even though we start and stop we need to use docker volumes.
+--> In simple terms we are replicating directories of host file system into virtual conatiner file system as a data persistance.
+--> There are 3 types of Volumes and created while using "docker run " command with "-v" argument
+a) Host Volumes
+--> Here we need to specify the file paths in both host and conatiner
+->docker run -v <host file path>:<conatiner file path>
+b) Anonymous Volumes
+--> Here we don't need to specify host file path we need to specify only container file path. The host file path creates anonymously .
+--> For each container a folder gets generated that gets mounted to container volume.
+->docker run -v <container file path>
+eg: Anonymous host file path will be like this "/var/lib/docker/volumes/random_hash/_data" 
+c) Named Volumes
+--> It is an improvement for Anonymous volumes and it specifies the name to the host anonymous file path volume.
+--> It is the mostly used volume type in production.
+->docker run -v <name>:<container file path>
+
+When we try to create volumes using docker-compose file then the syntax will be:
+
+volumes:
+	- <name>:<container file path>
