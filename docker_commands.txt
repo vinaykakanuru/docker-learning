@@ -5,28 +5,38 @@
 ->docker rmi -f <image_name> {will forcefully remove image from local if the image is already using for any container}
 ->docker rmi -f $(docker images -aq) {will remove all images form local}
 
-## container commands
+## container commands (docker container itself has a File system)
 ->docker ps {shows all running containers}
 ->docker ps -a {shows all running and stopped containers}
+
 ******>{Remember run command helps us to run a new container from an image}
-->docker run <imgae_name> {will create and start the container if image not found it pulls first}
-->docker run -d <image_name> {it runs in detach mode}
+->docker run <imgae_name> {will create a new container and starts the container. If image not found it pulls first from Docker Public/Private repository}
+->docker run -d <image_name> {It pulls the image and starts the container in detach mode i.e, it does not connect to the container instead gives hash key of container as output}
 ->docker run -p <host_port>:<container:port> <image_name> {container runs in specified local host}
 ->docker run --name <container_name> <image_name> {can keep desired names to our conatiner otherwise docker will create random names}
 ->docker run -e <envt_var_name>=<envt_value> <image_name> {can set envt var to a container}
 ->docker run --net <network_name> <image_name> {to make container runs in specified network}
+
 ******>{Remember start/stop commands helps us to restart the existing conatiner with the help of container_id}
-->docker stop <conatiner_id> {will stops the container running} 
-->docker start <conatiner_id> {will starts the container running}
-->docker rm <conatiner_id> (or) <container_name> {will remove container}
+->docker stop <conatiner_id> {will stops the container running outputs the conatiner hash key id} 
+->docker start <conatiner_id> {will starts the container running outputs the conatiner hash key id}
+->docker rm <conatiner_id> (or) <container_name> {will remove container}	
 ->docker container rm -f $(docker container ls -aq) {will remove all running and stopped conatiners}
-->docker exec -it <container_id> /bin/bash {can open conatiner in interactive terminal mode}
-Note: Some conatiners won't come with bash command line at that we can try with shell command (/bin/sh)
+
+*****>Docker Debug commands
 ->docker logs <container_id> {can open conatiner logs}
+->docker logs <container_name> {can pass container_id or container_name}
 ->docker logs <container_id> | tail {can open last few lines from conatiner logs}
+->docker exec -it <container_id> /bin/bash {can open conatiner in interactive terminal mode, terminal of the container}
+Note: Some conatiners won't come with bash command line at that we can try with shell command (/bin/sh)
+Once we entered into conatiner terminal we can execute a limited set of linux commands based on the image.
+We can check the File System, environment variables set to the container. 
+{<env>} command which outputs all environment variables.
+{exit} helps us to exit the terminal.
 
 
-## creating container for mongo and mongo-express in single network
+## Docker Network
+*****>creating container for mongo and mongo-express in single network
 ->docker networks ls (will show all networks available)
 ->docker network create mongo-networks (will create a network)
 
@@ -34,10 +44,23 @@ Note: Some conatiners won't come with bash command line at that we can try with 
 ->docker run -d --net mongo-networks -p 8081:8081-e ME_CONFIG_MONGODB_ADMINUSERNAME=admin -e ME_CONFIG_MONGODB_ADMINPASSWORD=tiger --name mongo-express -e ME_CONFIG_MONGODB_SERVER=mongodb-latest mongo-express
 
 ### Docker-compose
+Synatx of Docker-Compose (indentation is important)
+---------------------------------------------------------
+version: '3' # version of the docker-compose
+services:
+	<our desired conatiner-name>:
+		image: <docker-image-name>
+		ports:
+			-<local_host_port>:<default container_port>
+		environment:
+			-<environment_var_name>=<value>
+---------------------------------------------------------
 ## for multiple running docker containers (Use Docker Compose file)
 ******>{We don't need to create a network manually for conatiners which are going to create/run through docker-compose}
 ******>{docker-compose will create network and names our container and adds prefix and suffixes to conatiner names}
 ->docker-compose -f <file_name.yaml> up {-f means file, up means create and start containers}
+->docker-compose -f <file_name.yaml> down {It shut down all containers from yaml config file and removes both the container and network too}
+
 
 ### Dockerfile
 --> It is a blueprint for creating docker images. First line of every Dockerfile is "FROM <image>"
@@ -48,10 +71,20 @@ Note: Some conatiners won't come with bash command line at that we can try with 
 --> "CMD" helps container to run that command as an "entry point" while spinning up the conatiner. "CMD ["python","manage.py","runserver"]"
 --> We can have mutiple "RUN" commands but only one entry point command using "CMD".
 
+syntax:
+-------------------------------------------------------------------
+FROM <base_image:tag>  # tag(version of base image) optional
+ENV <env_var_name_1>=<val_1> \ # optional step it is better to keep env variables in docker-compose
+	<env_var_name_2>=<val_2>
+RUN <commands> # it execute any liunux commands, can have multiple RUN commands in a single Dockerfile
+COPY <host directory> <destination_folder inside container> # . indicates all files and sub-folders
+CMD ['python', 'app.py'] # entrypoint command
+-------------------------------------------------------------------
+
 # to build an image from Dockerfile we must need to provide two arguments tag and location of Dockerfile {-t <image_name> and <location where Dockerfile exists>}
-->docker build -t <image_name which we want to set> <location of Dockerfile in host>
+->docker build -t <image_name which we want to set>:<tag> <location of Dockerfile in host>
 Note: When we make any changes to Dockerfile we need to re-build the image
-->docker exec -it <container_id> /bin/sh {opens up the shell terminal}
+->docker exec -it <container_id> /bin/sh {opens the conatiner terminal}
 --> We can see the environment variables set in our Dockerfile using "env" inside shell.
 
 
