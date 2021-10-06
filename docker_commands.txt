@@ -34,6 +34,12 @@ We can check the File System, environment variables set to the container.
 {<env>} command which outputs all environment variables.
 {exit} helps us to exit the terminal.
 
+*****>Docker Copy commands
+We can move files from container to host using "docker cp" command
+->docker cp <containerId>:<source_path> <destination_path>
+source path should be absolute. for example, if the application/service directory starts from the app in your docker container the path would be /app/some_directory/file
+example : docker cp d86844abc129:/app/server/output/server-test.png C:/Users/someone/Desktop/output
+
 
 ## Docker Network
 *****>creating container for mongo and mongo-express in single network
