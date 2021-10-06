@@ -40,6 +40,10 @@ We can move files from container to host using "docker cp" command
 source path should be absolute. for example, if the application/service directory starts from the app in your docker container the path would be /app/some_directory/file
 example : docker cp d86844abc129:/app/server/output/server-test.png C:/Users/someone/Desktop/output
 
+In Similar way we can copy the files from host to container
+->docker cp <source_path> <containerId>:<destination_path>
+example : docker cp C:/Users/someone/Desktop/output d86844abc129:/app/server/output/server-test.png 
+
 
 ## Docker Network
 *****>creating container for mongo and mongo-express in single network
